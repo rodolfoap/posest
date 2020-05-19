@@ -40,6 +40,7 @@ extern void sam_PfromKRt(double K[9], double R[9], double t[3], double P[12]);
 extern void sam_FfromPs(double P0[12], double P1[12], double F[9]);
 extern int sam_KRtfromP(double P[12], double K[9], double R[9], double t[3]);
 extern void sam_KfromSensor(double foc, double senssz[2], int imgsz[2], double ppt[2], double sk, double K[9]);
+extern void sam_PCent(double P[12], double c[4]);
 
 /* absor.c */
 extern int sam_absorq  (double (*pts0)[3], double (*pts1)[3], int *indx, int npts, double R[9], double t[3], double *sc);

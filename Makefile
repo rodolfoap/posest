@@ -4,13 +4,16 @@
 
 CC=gcc
 LEVMAR_PATH=/home/lourakis/levmar-src/levmar-2.6/ # CHANGE THIS TO POINT TO YOUR COMPILED COPY OF LEVMAR
-INCLUDES=-I$(LEVMAR_PATH)
+INCLUDES=-I$(LEVMAR_PATH) -Imlsl
 CFLAGS=$(INCLUDES) -O3 -funroll-loops -Wall #-g #-pg
 LAPACKLIBS_PATH=/usr/local/lib # WHEN USING LAPACK, CHANGE THIS TO WHERE YOUR COMPILED LIBS ARE!
 LDFLAGS=-L. -L$(LEVMAR_PATH) -L$(LAPACKLIBS_PATH)
 
-LIBOBJS=poseproj.o posest.o lqs.o buckets.o p3p.o p4pf.o polysolve.o
-LIBSRCS=poseproj.c posest.c lqs.c buckets.c p3p.c p4pf.c polysolve.c
+LIBOBJS=buckets.o lqs.o ransac.o rngs.o prosac.o deal.o p3p.o p4pf.o planep4p.o svd3.o polysolve.o\
+poseproj.o posest.o align.o lhm.o sam.o mlsl/mlsl.o mlsl/mt19937ar.o mlsl/redblack.o mlsl/sobolseq.o
+
+LIBSRCS=buckets.c lqs.c ransac.c rngs.c prosac.c deal.c p3p.c p4pf.c planep4p.c svd3.c polysolve.c\
+poseproj.c posest.c align.c lhm.c sam.c mlsl/mlsl.c mlsl/mt19937ar.c mlsl/redblack.c mlsl/sobolseq.c
 
 DEMOOBJS=posest_demo.o
 DEMOSRCS=posest_demo.c
@@ -20,6 +23,8 @@ RM=rm -f
 MAKE=make
 MAPLE=maple
 
+# On systems with a FORTRAN (not f2c'ed) version of LAPACK, -lf2c is
+# not necessary; on others, -lf2c is equivalent to -lF77 -lI77
 LAPACKLIBS=-llapack -lblas -lf2c
 
 all: libposest.a posest_demo
@@ -40,8 +45,8 @@ posest_demo: $(DEMOOBJS) libposest.a
 
 posest_demo.o: posest.h
 
-poseproj.c: clc-poseproj.mpl
-	$(MAPLE) <  $<
+#poseproj.c: clc-poseproj.mpl
+#	$(MAPLE) <  $<
 
 clean:
 	-$(RM) $(LIBOBJS) $(DEMOOBJS) gmon.out

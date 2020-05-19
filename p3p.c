@@ -424,7 +424,7 @@ int p3p_solve3(struct p3p_calib_params *cp,
   n = lengths_Grunert(lengths, sqdistances, cosines);
 
   nb_solutions = 0;
-  for(i = 0; i < n; i++) 
+  for(i = 0; i < n; i++)
   {
     double M_orig[3][3];
     register double len;
@@ -444,7 +444,8 @@ int p3p_solve3(struct p3p_calib_params *cp,
     M_orig[2][1] = len * mv2;
     M_orig[2][2] = len * mk2;
 
-    if(posest_align3Pts(M_orig, M, R[nb_solutions], t[nb_solutions])) continue;
+    if(posest_align3PtsWTriad(M_orig, M, R[nb_solutions], t[nb_solutions])) continue;
+    //if(posest_align3Pts(M_orig, M, R[nb_solutions], t[nb_solutions])) continue;
     //if(posest_alignNPts(M, M_orig, 3, (double *)R[nb_solutions], t[nb_solutions])) continue;
     //if(sam_absorq(M, M_orig, NULL, 3, (double *)R[nb_solutions], t[nb_solutions], NULL)) continue;
 

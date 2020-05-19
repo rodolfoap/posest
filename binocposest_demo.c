@@ -109,7 +109,7 @@ long int fpos;
   fclose(fp);
 
   if(i!=nmatches){
-    fprintf(stderr, "number of actuall points in file %s does not agree with that in first line (%d != %d)!\n",
+    fprintf(stderr, "number of actual points in file %s does not agree with that in first line (%d != %d)!\n",
                      fname, i, nmatches);
     exit(1);
   }
