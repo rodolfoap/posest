@@ -1,7 +1,7 @@
     **************************************************************
                                 POSEST
-                              version 1.1
-                 By Manolis Lourakis & Xenophon Zabulis
+                              version 1.2
+                          By Manolis Lourakis
 
                      Institute of Computer Science
             Foundation for Research and Technology - Hellas

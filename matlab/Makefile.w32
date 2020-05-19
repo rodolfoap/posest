@@ -1,0 +1,34 @@
+#
+# Windows Makefile for MATLAB interface to posest
+#
+
+MEX=mex
+MEXCFLAGS=-DWIN32 -I.. -IC:\src\levmar-2.6  -O #-g
+# WHEN USING LAPACK, CHANGE THE NEXT TWO LINES TO WHERE YOUR COMPILED LAPACK/BLAS & F2C LIBS ARE!
+LAPACKBLASLIBS_PATH=C:\src\lib
+F2CLIBS_PATH=C:\src\lib
+LEVMARLIBSPATH=C:\src\levmar-2.6
+
+INTFACESRCS=posest.c
+INTFACESOBJ=posest.mexw32
+LEVMARLIB=$(LEVMARLIBSPATH)/levmar.lib
+POSESTLIB=../posest.lib
+LAPACKLIBS=$(LAPACKBLASLIBS_PATH)/clapack.lib $(LAPACKBLASLIBS_PATH)/blas.lib $(F2CLIBS_PATH)/libF77.lib $(F2CLIBS_PATH)/libI77.lib
+
+LIBS=$(POSESTLIB) $(LEVMARLIB) $(LAPACKLIBS)
+
+dummy: $(INTFACESOBJ)
+
+$(INTFACESOBJ): $(INTFACESRCS) $(POSESTLIB)
+	$(MEX) $(MEXCFLAGS) $(INTFACESRCS) $(LIBS)
+
+clean:
+	-del $(INTFACESOBJ)
+
+realclean cleanall: clean
+
+depend:
+	makedepend -f Makefile $(INTFACESRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

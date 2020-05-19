@@ -23,13 +23,15 @@
 #include <time.h>
 
 #include "posest.h"
+#include "sam.h"
 
 #undef NEED_OUTLIERS // define this to print information about the detected outliers
 
 #define MAXSTRLEN 1024
 
-/* read matching points from a file */
-static int readMatchingPoints(char *fname, double (**pts2D)[2], double (**pts3D)[3])
+
+/* read matching points from a file; offsxy are added to pixel coords to account for any cropping */
+static int readMatchingPoints(char *fname, double offsxy[2], double (**pts2D)[2], double (**pts3D)[3])
 {
 register int i;
 int ncoords, nmatches;
@@ -86,6 +88,10 @@ long int fpos;
   /* read in points and store them */
   for(i=0; !feof(fp); i++){
     ncoords=fscanf(fp, "%lf%lf%lf%lf%lf\n", (*pts3D)[i], (*pts3D)[i]+1, (*pts3D)[i]+2, (*pts2D)[i], (*pts2D)[i]+1);
+    if(offsxy){
+      (*pts2D)[i][0]+=offsxy[0];
+      (*pts2D)[i][1]+=offsxy[1];
+    }
     if(ncoords==EOF) break;
 
     if(ncoords!=5){
@@ -102,7 +108,7 @@ long int fpos;
   fclose(fp);
 
   if(i!=nmatches){
-    fprintf(stderr, "number of actuall points in file %s does not agree with that in first line (%d != %d)!\n",
+    fprintf(stderr, "number of actual points in file %s does not agree with that in first line (%d != %d)!\n",
                      fname, i, nmatches);
     exit(1);
   }
@@ -154,6 +160,8 @@ int npts, noutl, *outidx=NULL;
 int cstfunc;
 char *icalfile, *matchesfile;
 double K[9], P[NUM_PPARAMS], rms, rmeds;
+double cent[4];
+double offs[2]={4.0, 184.0};
 
 clock_t start_time, end_time;
 
@@ -167,7 +175,7 @@ clock_t start_time, end_time;
   matchesfile=argv[2];
 
   readCalibParams(icalfile, K);
-  npts=readMatchingPoints(matchesfile, &pts2D, &pts3D);
+  npts=readMatchingPoints(matchesfile, NULL /* offs */, &pts2D, &pts3D);
 
 #if 0
   for(i=0, rms=0.0; i<npts; ++i)
@@ -227,6 +235,9 @@ clock_t start_time, end_time;
   fprintf(stdout, "\nElapsed time: %.2lf seconds, %.2lf msecs\n", ((double) (end_time - start_time)) / CLOCKS_PER_SEC,
                         ((double) (end_time - start_time)) / (CLOCKS_PER_SEC/1000.0));
 
+  sam_PCent(P, cent);
+  cent[0]/=cent[3]; cent[1]/=cent[3]; cent[2]/=cent[3];
+  fprintf(stdout, "\nCamera projection center: %.2lf %.2lf %.2lf\n", cent[0], cent[1], cent[2]);
 
   /* print diagnostics regarding reprojection errors */
   posest_RMS_RMedS(pts2D, pts3D, npts, P, &rms, &rmeds);

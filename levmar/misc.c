@@ -29,7 +29,6 @@
 #include <float.h>
 
 #include "levmar.h"
-#include "mestimators.h"
 #include "misc.h"
 
 #if !defined(LM_DBL_PREC) && !defined(LM_SNGL_PREC)

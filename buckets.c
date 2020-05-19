@@ -79,17 +79,17 @@ char *present;
 /* Sets generation without buckets */
 
 /*
- * generate one subset
+ * generate one subset with distinct elements 
  */
 static void genOneSubsetNoBuckets(struct rng_state *rstate, int nbData, int sizeSet, int subset[])
 {
-register int i, j, r, in;
+register int i, j, r;
 
-  for(i=0; i<sizeSet;  ){
-    r=subset[i]=(int)rng_rint(rstate, nbData);
-    for(j=in=0; j<i && in==0; ++j) 
-      if(r==subset[j]) in=1;
-    if(in==0) ++i;
+  for(i=0; i<sizeSet; ++i){
+resample:
+    r=subset[i]=(int)rng_rint(rstate, nbData); // int in [0, nbData-1]
+    for(j=0; j<i; ++j)
+      if(r==subset[j]) goto resample; /* element already in subset, try another one */
   }
 }
 
@@ -142,14 +142,14 @@ resample:
 #endif /* 1 */
 
 #ifdef USE_UNIQUE_SETS
-      //shellsort_int(sets[i], sizeSet);
-      pigeonsort_int(sets[i], sizeSet, nbData);
+      //shellsort_int(subset, sizeSet);
+      pigeonsort_int(subset, sizeSet, nbData);
       /* verify whether the subset is already retained in sets */
       for(j=in=0; j<i && in==0; ++j){
         register int k;
 
 	      for(k=out=0; k<sizeSet && out==0; ++k)
-	        if(sets[i][k]!=sets[j][k]) out=1;
+	        if(subset[k]!=sets[j][k]) out=1;
 	      if(out==0) in=1;
 	    }
       if(in==0) ++i;
@@ -318,12 +318,12 @@ int posest_genRandomSetsWithBuckets(double (*pts)[2], int sizeSet, int nbData, i
         genOneSubsetNoBuckets(&state, nbData, sizeSet, subset);
 
 #ifdef USE_UNIQUE_SETS
-      //shellsort_int(sets[i], sizeSet);
-      pigeonsort_int(sets[i], sizeSet, nbData);
+      //shellsort_int(subset, sizeSet);
+      pigeonsort_int(subset, sizeSet, nbData);
       /* verify whether the subset is already contained in sets */
       for(j=in=0; j<i && in==0; ++j){
 	      for(k=out=0; k<sizeSet && out==0; ++k)
-	        if(sets[i][k]!=sets[j][k]) out=1;
+	        if(subset[k]!=sets[j][k]) out=1;
 	      if(out==0) in=1;
 	    }
       if(in==0) ++i;

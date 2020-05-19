@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "levmar.h"
+#include <levmar.h>
 
 #ifndef LM_DBL_PREC
 #error Example program assumes that levmar has been compiled with double precision, see LM_DBL_PREC!
@@ -50,10 +50,6 @@
 #define INIT_RANDOM(seed) srandom(seed)
 #else
 #define INIT_RANDOM(seed) srandom((int)GETPID()) // seed unused
-#endif
-
-#ifndef M_PI
-#define M_PI   3.14159265358979323846  /* pi */
 #endif
 
 /* Gaussian noise with mean m and variance s, uses the Box-Muller transformation */

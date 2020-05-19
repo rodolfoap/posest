@@ -87,7 +87,7 @@ IF(BUILD_DEMO)
   ENDIF(HAVE_LAPACK)
 
   ADD_EXECUTABLE(lmdemo lmdemo.c levmar.h)
-  TARGET_LINK_LIBRARIES(lmdemo ${LIBS})
+  TARGET_LINK_LIBRARIES(lmdemo ${LIBS} m)
   MESSAGE(STATUS "lmdemo will be linked against ${LIBS}")
 
 # make sure that the library is built before the demo

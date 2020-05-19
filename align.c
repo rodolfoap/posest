@@ -210,6 +210,151 @@ int posest_align3Pts(double M_end[3][3],
 }
 
 
+/* compute the rigid transformation between the three world - camera point pairs in M and f,
+ * i.e., find R, t such that fi=R*Mi + t, i=1..3
+ * Much faster than posest_align3Pts()
+ *
+ * The computation follows the "triad method", see https://en.wikipedia.org/wiki/Triad_method
+ * Adapted from code originally written by George Terzakis
+ *
+ * Returns 0 on success, 1 otherwise
+ */
+int posest_align3PtsWTriad(double f[3][3], double M[3][3], double R[3][3], double t[3])
+{
+double f1x, f1y, f1z, f2x, f2y, f2z, f3x, f3y, f3z;
+double X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3;
+double mag;
+
+double d12[3], d13[3];
+double v1[3], v2[3], v3[3];
+
+double p12[3], p13[3];
+double u1[3], u2[3], u3[3];
+
+double g1[3], g2[3], g3[3];
+
+  // Cache the camera & world vector coordinates to simplify the expressions that follow...
+  f1x=f[0][0]; f2x=f[1][0]; f3x=f[2][0];
+  f1y=f[0][1]; f2y=f[1][1]; f3y=f[2][1];
+  f1z=f[0][2]; f2z=f[1][2]; f3z=f[2][2];
+
+  X1=M[0][0]; X2=M[1][0]; X3=M[2][0];
+  Y1=M[0][1]; Y2=M[1][1]; Y3=M[2][1];
+  Z1=M[0][2]; Z2=M[1][2]; Z3=M[2][2];
+
+  // differences f2 - f1, f3 - f1
+  d12[0]=f2x - f1x; d12[1]=f2y - f1y; d12[2]=f2z - f1z;
+  d13[0]=f3x - f1x; d13[1]=f3y - f1y; d13[2]=f3z - f1z;
+
+  // ********* A. Create a coordinate frame in the camera local frame using the vectors f **************
+
+  // a. v1 = d12 x d13
+  // [0 -d12z d12y] .* [d13x d13y d13z]
+  v1[0]=0*d13[0] + (-d12[2])*d13[1] + d12[1]*d13[2];
+  // [d12z 0 -d12x] .* [d13x d13y d13z]
+  v1[1]=d12[2]*d13[0] + 0*d13[1] + (-d12[0])*d13[2];
+  // [-d12y d12x 0] .* [d13x d13y d13z]
+  v1[2]=(-d12[1])*d13[0] + d12[0]*d13[1] + 0*d13[2];
+  // normalize...
+  mag=sqrt(v1[0]*v1[0] + v1[1]*v1[1] + v1[2]*v1[2]);
+  if(mag<1E-08) return 1;
+  mag=1.0 / mag;
+  v1[0]*=mag; v1[1]*=mag; v1[2]*=mag; // first unit vector...
+
+  // b. v2 = d12 
+  v2[0]=d12[0]; v2[1]=d12[1]; v2[2]=d12[2];
+  // normalize...
+  mag=sqrt(v2[0]*v2[0] + v2[1]*v2[1] + v2[2]*v2[2]);
+  if(mag<1E-08) return 1;
+  mag=1.0 / mag;
+  v2[0]*=mag; v2[1]*=mag; v2[2]*=mag; // second unit vector...
+
+  // c. v3 = v1 x v2
+  // [0 -v1z v1y] .* [v2x v2y v2z]
+  v3[0]=0*v2[0] + (-v1[2])*v2[1] + v1[1]*v2[2];
+  // [v1z 0 -v1x] .* [v2x v2y v2z]
+  v3[1]=v1[2]*v2[0] + 0*v2[1] + (-v1[0])*v2[2];
+  // [-v1y v1x 0] .* [v2x v2y v2z]
+  v3[2]=(-v1[1])*v2[0] + v1[0]*v2[1] + 0*v2[2];
+
+  // all the v vectors stacked in a matrix V:
+  /*
+  { { v1[0], v2[0], v3[0]},
+    { v1[1], v2[1], v3[1]},
+    { v1[2], v2[2], v3[2]} };
+  */
+
+  // B. ****** Create a coordinate frame with the world points, again in the exact same fashion as in (A): u1 = (12) x (13), u2 = 12, u3 = u2 x u3
+  // p12 = M2 - M1
+  p12[0]=X2 - X1; p12[1]=Y2 - Y1; p12[2]=Z2 - Z1;
+  // p13 = M3 - M1
+  p13[0]=X3 - X1; p13[1]=Y3 - Y1; p13[2]=Z3 - Z1;
+
+  // a. u1 = p12 x p13
+  // [0 -p12z p12y] .* [p13x p13y p13z]
+  u1[0]=0*p13[0] + (-p12[2])*p13[1] + p12[1]*p13[2];
+  // [p12z 0 -p12x] .* [p13x p13y p13z]
+  u1[1]=p12[2]*p13[0] + 0*p13[1] + (-p12[0])*p13[2];
+  // [-p12y p12x 0] .* [p13x p13y p13z]
+  u1[2]=(-p12[1])*p13[0] + p12[0]*p13[1] + 0*p13[2];
+  // normalize...
+  mag=sqrt(u1[0]*u1[0] + u1[1]*u1[1] + u1[2]*u1[2]);
+  if(mag<1E-08) return 1;
+  mag=1.0 / mag;
+  u1[0]*=mag; u1[1]*=mag; u1[2]*=mag;
+
+  // b. u2 = p12 
+  u2[0]=p12[0]; u2[1]=p12[1]; u2[2]=p12[2];
+  // normalize...
+  mag=sqrt(u2[0]*u2[0] + u2[1]*u2[1] + u2[2]*u2[2]);
+  if(mag<1E-08) return 1;
+  mag=1.0 / mag;
+  u2[0]*=mag; u2[1]*=mag; u2[2]*=mag;
+
+  // c. u3 = u1 x u2
+  // [0 -u1z u1y] .* [u2x u2y u2z]
+  u3[0]=0*u2[0] + (-u1[2])*u2[1] + u1[1]*u2[2];
+  // [u1z 0 -u1x] .* [u2x u2y u2z]
+  u3[1]=u1[2]*u2[0] + 0*u2[1] + (-u1[0])*u2[2];
+  // [-u1y u1x 0] .* [u2x u2y u2z]
+  u3[2]=(-u1[1])*u2[0] + u1[0]*u2[1] + 0*u2[2];
+
+  // all the u vectors stacked in a matrix U:
+  /*
+  { { u1[0], u2[0], u3[0]},
+    { u1[1], u2[1], u3[1]},
+    { u1[2], u2[2], u3[2]} };
+  */
+
+  // the rotation matrix is a matter of a multiplication: R = V * U^T
+  R[0][0]=v1[0]*u1[0] + v2[0]*u2[0] + v3[0]*u3[0];  R[0][1]=v1[0]*u1[1] + v2[0]*u2[1] + v3[0]*u3[1];  R[0][2]=v1[0]*u1[2] + v2[0]*u2[2] + v3[0]*u3[2];
+  R[1][0]=v1[1]*u1[0] + v2[1]*u2[0] + v3[1]*u3[0];  R[1][1]=v1[1]*u1[1] + v2[1]*u2[1] + v3[1]*u3[1];  R[1][2]=v1[1]*u1[2] + v2[1]*u2[2] + v3[1]*u3[2];
+  R[2][0]=v1[2]*u1[0] + v2[2]*u2[0] + v3[2]*u3[0];  R[2][1]=v1[2]*u1[1] + v2[2]*u2[1] + v3[2]*u3[1];  R[2][2]=v1[2]*u1[2] + v2[2]*u2[2] + v3[2]*u3[2];
+
+
+  // obtain the vectors Mi in the camera frame (denoted g1, g2, g3):
+  // g1 = R * M1
+  g1[0]=R[0][0]*X1 + R[0][1]*Y1 + R[0][2]*Z1;
+  g1[1]=R[1][0]*X1 + R[1][1]*Y1 + R[1][2]*Z1;
+  g1[2]=R[2][0]*X1 + R[2][1]*Y1 + R[2][2]*Z1;
+  // g2 = R * M2
+  g2[0]=R[0][0]*X2 + R[0][1]*Y2 + R[0][2]*Z2;
+  g2[1]=R[1][0]*X2 + R[1][1]*Y2 + R[1][2]*Z2;
+  g2[2]=R[2][0]*X2 + R[2][1]*Y2 + R[2][2]*Z2;
+  // g3 = R * M3
+  g3[0]=R[0][0]*X3 + R[0][1]*Y3 + R[0][2]*Z3;
+  g3[1]=R[1][0]*X3 + R[1][1]*Y3 + R[1][2]*Z3;
+  g3[2]=R[2][0]*X3 + R[2][1]*Y3 + R[2][2]*Z3;
+
+  // the LS estimate of translation is simply the difference of centroids: t = mean(fi) - R*mean(Mi)
+  t[0]=((f1x + f2x + f3x) - (g1[0] + g2[0] + g3[0])) / 3.0;
+  t[1]=((f1y + f2y + f3y) - (g1[1] + g2[1] + g3[1])) / 3.0;
+  t[2]=((f1z + f2z + f3z) - (g1[2] + g2[2] + g3[2])) / 3.0;
+
+  return 0;
+}
+
+
 /* LAPACK eigenvalues/eigenvectors */
 extern int F77_FUNC(dsyev)(char *jobz, char *uplo, int *n, double *a, int *lda, double *w, double *work, int *lwork, int *info);
 

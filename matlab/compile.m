@@ -1,0 +1,1 @@
+ mex -compatibleArrayDims -Ie:/posest-1.0  posest.c  e:/posest-1.0/w32/libposest.a  e:/fundest-1.1/w32/libfundest.a   e:/fundest-1.1/levmar-2.6/w32/liblevmar.a lapack_win32_MT.lib  blas_win32_MT.lib

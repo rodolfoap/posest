@@ -16,6 +16,7 @@ extern int posest_genRandomSetsWithBuckets(double (*pts)[2], int sizeSet, int nb
 
 /* align.c */
 extern int posest_align3Pts(double M_end[3][3], double XYZ[3][3], double R[3][3], double T[3]);
+extern int posest_align3PtsWTriad(double f[3][3], double M[3][3], double R[3][3], double t[3]);
 extern int posest_alignNPts(double (*pts0)[3], double (*pts1)[3], int npts, double R[9], double t[3]);
 
 #endif /* _UTIL_H */
