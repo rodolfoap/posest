@@ -5,6 +5,6 @@
 * Included history taken from https://github.com/imbinwang/posest
 * **CMakeLists.txt** slightly refactored.
 * Still warnings from <math.h> _sincos()_ function (see `compiler.h`)
-* See [the original README.txt](Readme.txt)
+* See the original [README.txt](README.txt)
 
 All the credit to the author, Manolis Lourakis.
