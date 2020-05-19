@@ -1,15 +1,12 @@
-    **************************************************************
-                                POSEST
-                              version 1.2
-                          By Manolis Lourakis
+# POSEST
+version 1.2
+By Manolis Lourakis
+Institute of Computer Science
+Foundation for Research and Technology - Hellas
+Heraklion, Crete, Greece
 
-                     Institute of Computer Science
-            Foundation for Research and Technology - Hellas
-                       Heraklion, Crete, Greece
-    **************************************************************
+## GENERAL
 
-
-GENERAL
 This is posest, a copylefted C/C++ library for 6DoF pose estimation. The
 computation is based on a set of 3D points and their corresponding 2D
 projections on an imaging sensor. The library estimates the relative motion
@@ -21,7 +18,8 @@ pp. 83-92, 2013.
 
 Please cite this paper if your use posest in your published work.
 
-LICENSE
+## LICENSE
+
 posest is released under the GNU Public License (GPL), which can be found in
 the included LICENSE file. Note that under the terms of GPL, commercial use
 is allowed only if a software employing posest is also published in source
@@ -29,7 +27,7 @@ under the GPL. However, if you are interested in using posest in a proprietary
 commercial application, a commercial license for posest can be obtained by
 contacting the author using the email address at the end of this file.
 
-COMPILATION
+## COMPILATION
 posest can be compiled with the CMake cross-platform build system. The included
 CMakeLists.txt file can be used to generate makefiles for Unix systems or project
 files for Windows systems.  CMakeLists.txt defines some configuration variables
@@ -43,7 +41,7 @@ optimization library should be installed.
 The demo program posest_demo and binocposest_demo provide working examples
 of using posest. Please refer to examples/README.txt for sample runs.
 
-MATLAB INTERFACE
+## MATLAB INTERFACE
 The 'matlab' subdirectory in posest's distribution includes a matlab mex
 interface. See the accompanying 'README.txt' for more information and examples
 of use.
