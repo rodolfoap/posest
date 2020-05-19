@@ -7,4 +7,10 @@
 * Still warnings from <math.h> _sincos()_ function (see `compiler.h`)
 * See the original [README.txt](README.txt)
 
+## Requirements
+
+```
+apt -y install liblapack-dev libblas-dev libf2c2-dev
+```
+
 All the credit to the author, Manolis Lourakis.
